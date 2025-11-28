@@ -1,0 +1,171 @@
+---------------------------------------------------------
+--   TABELA PRINCIPAL DE USUÁRIOS
+---------------------------------------------------------
+CREATE TABLE usuarios (
+    codigo INT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    cpf VARCHAR(20) UNIQUE NOT NULL,
+    endereco VARCHAR(200),
+    telefone VARCHAR(20),
+    email VARCHAR(100)
+);
+
+---------------------------------------------------------
+--   ESPECIALIZAÇÃO: ALUNOS / PROFESSORES / FUNCIONÁRIOS
+---------------------------------------------------------
+CREATE TABLE alunos (
+    codigo INT PRIMARY KEY,
+    FOREIGN KEY (codigo) REFERENCES usuarios(codigo)
+);
+
+CREATE TABLE professores (
+    codigo INT PRIMARY KEY,
+    FOREIGN KEY (codigo) REFERENCES usuarios(codigo)
+);
+
+CREATE TABLE funcionarios (
+    codigo INT PRIMARY KEY,
+    FOREIGN KEY (codigo) REFERENCES usuarios(codigo)
+);
+
+---------------------------------------------------------
+--   EVENTOS
+---------------------------------------------------------
+CREATE TABLE eventos (
+    codigo INT PRIMARY KEY,
+    titulo VARCHAR(100),
+    descricao TEXT,
+    data DATE,
+    local VARCHAR(100)
+);
+
+---------------------------------------------------------
+--   INSCRIÇÃO EM EVENTOS (Relacionamento 1:N)
+---------------------------------------------------------
+CREATE TABLE inscricao (
+    codigo_usuario INT,
+    codigo_evento INT,
+    PRIMARY KEY (codigo_usuario, codigo_evento),
+    FOREIGN KEY (codigo_usuario) REFERENCES usuarios(codigo),
+    FOREIGN KEY (codigo_evento) REFERENCES eventos(codigo)
+);
+
+---------------------------------------------------------
+--   MATERIAIS (superclasse)
+---------------------------------------------------------
+CREATE TABLE materiais (
+    codigo INT PRIMARY KEY,
+    titulo VARCHAR(200) NOT NULL,
+    ano INT
+);
+
+---------------------------------------------------------
+--   ESPECIALIZAÇÃO: FÍSICOS
+---------------------------------------------------------
+CREATE TABLE fisicos (
+    codigo INT PRIMARY KEY,
+    conservacao VARCHAR(50),
+    localizacao VARCHAR(50),
+    FOREIGN KEY (codigo) REFERENCES materiais(codigo)
+);
+
+---------------------------------------------------------
+--   ESPECIALIZAÇÃO: DIGITAL
+---------------------------------------------------------
+CREATE TABLE digital (
+    codigo INT PRIMARY KEY,
+    FOREIGN KEY (codigo) REFERENCES materiais(codigo)
+);
+
+---------------------------------------------------------
+--   LIVROS
+---------------------------------------------------------
+CREATE TABLE livros (
+    codigo INT PRIMARY KEY,
+    issn VARCHAR(30),
+    autores VARCHAR(200),
+    editora VARCHAR(100),
+    edicao VARCHAR(20),
+    FOREIGN KEY (codigo) REFERENCES materiais(codigo)
+);
+
+---------------------------------------------------------
+--   REVISTA
+---------------------------------------------------------
+CREATE TABLE revista (
+    codigo INT PRIMARY KEY,
+    issn VARCHAR(30),
+    periodicidade VARCHAR(50),
+    volume INT,
+    numero INT,
+    FOREIGN KEY (codigo) REFERENCES materiais(codigo)
+);
+
+---------------------------------------------------------
+--   ARTIGOS
+---------------------------------------------------------
+CREATE TABLE artigo (
+    codigo INT PRIMARY KEY,
+    autores VARCHAR(200),
+    periodicos VARCHAR(100),
+    FOREIGN KEY (codigo) REFERENCES materiais(codigo)
+);
+
+---------------------------------------------------------
+--   RESERVA (Usuário reserva Material)
+---------------------------------------------------------
+CREATE TABLE reserva (
+    codigo_usuario INT,
+    codigo_material INT,
+    PRIMARY KEY (codigo_usuario, codigo_material),
+    FOREIGN KEY (codigo_usuario) REFERENCES usuarios(codigo),
+    FOREIGN KEY (codigo_material) REFERENCES materiais(codigo)
+);
+
+---------------------------------------------------------
+--   SOLICITA (Usuário solicita Material)
+---------------------------------------------------------
+CREATE TABLE solicita (
+    codigo_usuario INT,
+    codigo_material INT,
+    PRIMARY KEY (codigo_usuario, codigo_material),
+    FOREIGN KEY (codigo_usuario) REFERENCES usuarios(codigo),
+    FOREIGN KEY (codigo_material) REFERENCES materiais(codigo)
+);
+
+---------------------------------------------------------
+--   EMPRÉSTIMO
+---------------------------------------------------------
+CREATE TABLE emprestimo (
+    codigo_usuario INT,
+    codigo_material INT,
+    data_retirada DATE,
+    data_prevista DATE,
+    data_devolucao DATE,
+    PRIMARY KEY (codigo_usuario, codigo_material),
+    FOREIGN KEY (codigo_usuario) REFERENCES usuarios(codigo),
+    FOREIGN KEY (codigo_material) REFERENCES materiais(codigo)
+);
+
+---------------------------------------------------------
+--   ATRASO
+---------------------------------------------------------
+CREATE TABLE atraso (
+    codigo_usuario INT,
+    codigo_material INT,
+    PRIMARY KEY (codigo_usuario, codigo_material),
+    FOREIGN KEY (codigo_usuario, codigo_material)
+        REFERENCES emprestimo(codigo_usuario, codigo_material)
+);
+
+---------------------------------------------------------
+--   MULTA (0,1 : 1 relação com ATRASO)
+---------------------------------------------------------
+CREATE TABLE multa (
+    codigo_atraso_usuario INT,
+    codigo_atraso_material INT,
+    dias_atraso INT,
+    PRIMARY KEY (codigo_atraso_usuario, codigo_atraso_material),
+    FOREIGN KEY (codigo_atraso_usuario, codigo_atraso_material)
+        REFERENCES atraso(codigo_usuario, codigo_material)
+);
